@@ -2,7 +2,6 @@ requirement.txt
 __pycache__
 .vscode
 build
-dist
 .DS_Store
 git-log.spec
 gitlogs.csv
