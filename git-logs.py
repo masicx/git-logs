@@ -20,7 +20,7 @@ def getAuthorsEmails(authorsPerRepository) -> str:
 
 
 parser = argparse.ArgumentParser(
-    description="Get git logs and save them into an HTML table and a CSV file",
+    description="Get git logs and save them into a CSV file",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 )
 parser.add_argument(
