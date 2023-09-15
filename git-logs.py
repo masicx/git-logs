@@ -38,6 +38,7 @@ parser.add_argument(
 parser.add_argument("-v", "--verbose", action="store_true", help="Increase verbosity")
 parser.add_argument("-d", "--directory", help="Path to git repositories")
 parser.add_argument("since", help="Starting date for getting logs. Ex: \"today\" or \"yesterday\" or \"April 20, 2023\" or \"2023-08-01\"")
+parser.add_argument("--csv-config", help="CSV config file path. Ex: \"csv.yaml\"")
 
 args = parser.parse_args()
 config = vars(args)
@@ -48,6 +49,10 @@ root = (
     if not (config["directory"] and config["directory"].strip())
     else config["directory"]
 )
+
+config["csv_config"] = ("csv.yaml"
+    if not (config["csv_config"] and config["csv_config"].strip())
+    else config["csv_config"])
 printVerbose(root, config["verbose"])
 
 repositories = [
@@ -125,7 +130,7 @@ for repository in repositories:
             currentDetails.deletions += int(splittedLine[1])
 
         if readComments and len(splittedLine) > 4:
-            currentDetails.comments += splittedLine[4] + " "
+            currentDetails.comments += " ".join(splittedLine[4:]) + " "
 
 print("Creating CSV file")
-createCsv("gitlogs.csv", authorsPerRepo)
+createCsv("gitlogs.csv", authorsPerRepo, config["csv_config"])
