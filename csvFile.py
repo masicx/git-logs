@@ -3,7 +3,6 @@ import yaml
 from author import Author
 from details import Details
 import os
-import yaml
 
 # check if a yaml file exists, if exist then do nothing else create it
 def get_yaml_file(yaml_file):
@@ -94,6 +93,8 @@ def get_row_data(repoName, authorName, date, details: Details, yaml_data):
             data[key] = details.deletions
         elif value == "comments":
             data[key] = details.comments
+        else:
+            data[key] = value
     return data
 
 def createCsv(fileName: str, data, yaml_file) -> None:

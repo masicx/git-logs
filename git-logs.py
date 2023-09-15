@@ -88,7 +88,7 @@ for repository in repositories:
     skipAuthor = False
     currentDetails: Details
     for line in logs:
-        splittedLine = line.replace("| ", "").split(" ")
+        splittedLine = line.replace("| ", "").lstrip().split(" ")
         if re.match("^[*] commit", line.replace("b'", "")):
             if splittedLine[-1].endswith(")"):
                 branches = "".join(splittedLine[2:]).split(",")
@@ -119,7 +119,7 @@ for repository in repositories:
             currentDetails = currentAuthor.details[currentDate][currentBranch]
             currentDetails.commits += 1
             currentDetails.branch = currentBranch
-            currentDetails.comments += " - " if currentDetails.comments != '' else ""
+            currentDetails.comments += " - " if currentDetails.comments != '' and not currentDetails.comments.endswith(" - ") else ""
             continue
 
         if re.match("^[0-9]", splittedLine[0]):
@@ -130,7 +130,7 @@ for repository in repositories:
             currentDetails.deletions += int(splittedLine[1])
 
         if readComments and len(splittedLine) > 4:
-            currentDetails.comments += " ".join(splittedLine[4:]) + " "
+            currentDetails.comments += " ".join(splittedLine) + " "
 
 print("Creating CSV file")
 createCsv("gitlogs.csv", authorsPerRepo, config["csv_config"])
