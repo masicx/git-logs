@@ -38,5 +38,6 @@ class GitProcess:
         arguments.append('--numstat')
         arguments.append('--all')
         arguments.append('--decorate')
+        arguments.append('--graph')
         output = self.Execute(arguments)
         return output

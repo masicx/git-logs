@@ -63,12 +63,12 @@ for repository in repositories:
 
     process.GetRemoteBranches()
     process.Fetch(True)
+    process.Pull(True)
     printVerbose(">{}".format(process.Pull(True)), config["verbose"])
 
     authorsPerRepo[repository] = {}
     print("Getting logs for {}".format(repository))
-    # output = process.GetLogs(config["since"], config["until"], config["authors"]).replace("b\"", "")
-    output = process.GetLogs(config["since"], config["until"]).replace("b\"", "")
+    output = process.GetLogs(config["since"], config["until"], config["authors"]).replace("b\"", "")
 
     currentAuthor: Author
     currentDate = ""
@@ -83,49 +83,49 @@ for repository in repositories:
     skipAuthor = False
     currentDetails: Details
     for line in logs:
-        splittedLine = line.split(" ")
-        if re.match("^commit", line.replace("b'", "")):
+        splittedLine = line.replace("| ", "").split(" ")
+        if re.match("^[*] commit", line.replace("b'", "")):
             if splittedLine[-1].endswith(")"):
                 branches = "".join(splittedLine[2:]).split(",")
                 currentBranch = branches[-1].replace(")","").replace("(", "").replace("origin/","")
                 printVerbose("line: {}".format(line), config["verbose"])
                 printVerbose("Branch name: {}".format(currentBranch), config["verbose"])
 
-        if re.match("^Author:", line):
-            if splittedLine[1] not in authorsPerRepo[repository]:
-                authorsPerRepo[repository][splittedLine[1]] = Author(
-                    splittedLine[1], splittedLine[-1]
+        if re.match("^Author:", splittedLine[0]):
+            authorName = " ".join(splittedLine[1:-1])
+            if authorName not in authorsPerRepo[repository]:
+                authorsPerRepo[repository][authorName] = Author(
+                    authorName, splittedLine[-1]
                 )
-            currentAuthor = authorsPerRepo[repository][splittedLine[1]]
-            skipAuthor = config["authors"] and config["authors"] != currentAuthor.name
+            currentAuthor = authorsPerRepo[repository][authorName]
 
-        if skipAuthor:
-            continue
-
-        if re.match("^Date:", line):
+        if re.match("^Date:", splittedLine[0]):
             readComments = True
             currentDate = (
                 splittedLine[4] + " " + splittedLine[5] + ", " + splittedLine[7]
             )
+
             if currentDate not in currentAuthor.details:
                 currentAuthor.details[currentDate] = {}
+
             if currentBranch not in currentAuthor.details[currentDate]:
                 currentAuthor.details[currentDate][currentBranch] = Details()
+
             currentDetails = currentAuthor.details[currentDate][currentBranch]
             currentDetails.commits += 1
             currentDetails.branch = currentBranch
-            currentDetails.comments += "- "
+            currentDetails.comments += " - " if currentDetails.comments != '' else ""
             continue
 
-        if re.match("^[0-9]", line):
+        if re.match("^[0-9]", splittedLine[0]):
             readComments = False
             splittedLine = splittedLine[0].split("\\t")
             currentDetails.filesChanged += 1
             currentDetails.insertions += int(splittedLine[0])
             currentDetails.deletions += int(splittedLine[1])
 
-        if readComments and line.lstrip():
-            currentDetails.comments += line.lstrip() + " "
+        if readComments and len(splittedLine) > 4:
+            currentDetails.comments += splittedLine[4] + " "
 
 print("Creating CSV file")
 createCsv("gitlogs.csv", authorsPerRepo)
