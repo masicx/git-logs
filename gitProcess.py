@@ -13,9 +13,9 @@ class GitProcess:
 
     def GetRemoteBranches(self) -> list:
         output = self.Execute(["git", "-C", self.repo, "branch", "-r"])
-        branches = list(map(str.strip, output.__str__().split("\\n")[1:-1]))
+        branches = list(map(str.strip, output.__str__().replace("b'", "").lstrip().split("\\n")[:-1]))
         for branch in branches:
-            branchName = branch.split("/")[-1]
+            branchName = branch.replace("origin/", "")
             output = self.Execute(
                 ["git", "-C", self.repo, "branch", "--track", branchName, branch]
             )
@@ -37,7 +37,6 @@ class GitProcess:
 
         arguments.append('--numstat')
         arguments.append('--all')
-        arguments.append('--decorate')
-        arguments.append('--graph')
+        arguments.append('--source')
         output = self.Execute(arguments)
         return output
