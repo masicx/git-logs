@@ -66,7 +66,7 @@ for repository in repositories:
     gitRepo = "{}/{}".format(root, repository)
     process = GitProcess(gitRepo)
 
-    process.GetRemoteBranches()
+    printVerbose(process.GetRemoteBranches(), config["verbose"])
     process.Fetch(True)
     process.Pull(True)
     printVerbose(">{}".format(process.Pull(True)), config["verbose"])
@@ -89,12 +89,11 @@ for repository in repositories:
     currentDetails: Details
     for line in logs:
         splittedLine = line.replace("| ", "").lstrip().split(" ")
-        if re.match("^[*] commit", line.replace("b'", "")):
-            if splittedLine[-1].endswith(")"):
-                branches = "".join(splittedLine[2:]).split(",")
-                currentBranch = branches[-1].replace(")","").replace("(", "").replace("origin/","")
-                printVerbose("line: {}".format(line), config["verbose"])
-                printVerbose("Branch name: {}".format(currentBranch), config["verbose"])
+        if re.match("^commit", line.replace("b'", "")):
+            currentBranch = splittedLine[1].split("\\t")[1].replace("refs/heads/", "")
+            printVerbose("line: {}".format(line), config["verbose"])
+            printVerbose("Branch name: {}".format(currentBranch), config["verbose"])
+            continue
 
         if re.match("^Author:", splittedLine[0]):
             authorName = " ".join(splittedLine[1:-1])
@@ -103,6 +102,7 @@ for repository in repositories:
                     authorName, splittedLine[-1]
                 )
             currentAuthor = authorsPerRepo[repository][authorName]
+            continue
 
         if re.match("^Date:", splittedLine[0]):
             readComments = True
@@ -128,8 +128,9 @@ for repository in repositories:
             currentDetails.filesChanged += 1
             currentDetails.insertions += int(splittedLine[0])
             currentDetails.deletions += int(splittedLine[1])
+            continue
 
-        if readComments and len(splittedLine) > 4:
+        if readComments and len(splittedLine) > 0:
             currentDetails.comments += " ".join(splittedLine) + " "
 
 print("Creating CSV file")
