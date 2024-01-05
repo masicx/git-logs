@@ -122,12 +122,16 @@ for repository in repositories:
             currentDetails.comments += " - " if currentDetails.comments != '' and not currentDetails.comments.endswith(" - ") else ""
             continue
 
-        if re.match("^[0-9]", splittedLine[0]):
+        if re.match("^[0-9]+\\\\t", splittedLine[0]):
             readComments = False
             splittedLine = splittedLine[0].split("\\t")
             currentDetails.filesChanged += 1
             currentDetails.insertions += int(splittedLine[0])
             currentDetails.deletions += int(splittedLine[1])
+            continue
+
+        if re.match("^-\\\\t", splittedLine[0]):
+            currentDetails.filesChanged += 1
             continue
 
         if readComments and len(splittedLine) > 0:
