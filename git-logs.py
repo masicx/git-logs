@@ -68,7 +68,6 @@ for repository in repositories:
 
     printVerbose(process.GetRemoteBranches(), config["verbose"])
     process.Fetch(True)
-    process.Pull(True)
     printVerbose(">{}".format(process.Pull(True)), config["verbose"])
 
     authorsPerRepo[repository] = {}
